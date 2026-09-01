@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
 
 export default function Home() {
-  redirect('/login');
+  // Der Hub prueft selbst Session + Freischaltungsstatus und leitet
+  // Nicht-Angemeldete zu /login weiter.
+  redirect('/hub');
 }

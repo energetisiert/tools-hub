@@ -34,5 +34,6 @@ export async function loginAction(_prev: { fehler: string } | null, formData: Fo
   }
 
   const redirectTo = sichereRedirectUrl(String(formData.get('redirect_to') ?? ''));
-  redirect(redirectTo ?? '/warten-auf-freischaltung');
+  // Der Hub leitet nicht freigeschaltete Konten selbst zu /warten-auf-freischaltung.
+  redirect(redirectTo ?? '/hub');
 }

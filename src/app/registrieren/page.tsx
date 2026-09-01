@@ -1,3 +1,4 @@
+import { AuthShell } from '@/components/ui/AuthShell';
 import { Card } from '@/components/ui/Card';
 import { RegistrierenForm } from './RegistrierenForm';
 
@@ -7,8 +8,10 @@ export default async function RegistrierenPage({ searchParams }: { searchParams:
   const { redirect_to } = await searchParams;
 
   return (
-    <Card title="Konto erstellen">
-      <RegistrierenForm redirectTo={redirect_to ?? ''} />
-    </Card>
+    <AuthShell>
+      <Card title="Konto erstellen">
+        <RegistrierenForm redirectTo={redirect_to ?? ''} />
+      </Card>
+    </AuthShell>
   );
 }

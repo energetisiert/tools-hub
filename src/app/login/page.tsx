@@ -1,3 +1,4 @@
+import { AuthShell } from '@/components/ui/AuthShell';
 import { Card } from '@/components/ui/Card';
 import { LoginForm } from './LoginForm';
 
@@ -7,8 +8,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { redirect_to } = await searchParams;
 
   return (
-    <Card title="Anmelden">
-      <LoginForm redirectTo={redirect_to ?? ''} />
-    </Card>
+    <AuthShell>
+      <Card title="Anmelden">
+        <LoginForm redirectTo={redirect_to ?? ''} />
+      </Card>
+    </AuthShell>
   );
 }

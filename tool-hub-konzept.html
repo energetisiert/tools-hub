@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>energetisiert. · Tools nach Zielgruppe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ac:#1f7a4d; --ink:#141414; --bg:#fbfbfa; --tint:#f4f4f1;
+  --muted:#5c5c57; --muted2:#8a8a84; --strong:#33332f;
+  --dark:#14281e; --mint:#7fc9a2; --dark-body:#b9cec2; --dark-label:#8ba79a;
+  --warm:#e9917a; --red:#c4472f;
+  --b07:rgba(0,0,0,.07); --b08:rgba(0,0,0,.08); --b10:rgba(0,0,0,.10); --b12:rgba(0,0,0,.12);
+  --disp:'Montserrat',Helvetica,Arial,sans-serif;
+  --body:'Instrument Sans',Helvetica,Arial,sans-serif;
+  --rl:20px; --rm:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--disp);font-weight:800;letter-spacing:-.02em}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+
+header{position:sticky;top:0;z-index:50;background:rgba(251,251,250,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--b07)}
+.hwrap{max-width:1180px;margin:0 auto;padding:9px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-family:var(--disp);font-weight:800;font-size:20px;letter-spacing:-.02em}
+.logo span{color:var(--ac)}
+.seg{display:inline-flex;background:var(--tint);border:1px solid var(--b07);border-radius:999px;padding:4px;gap:2px}
+.seg button{border:none;background:none;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--muted);padding:7px 14px;border-radius:999px;cursor:pointer;transition:background .15s,color .15s}
+.seg button.on{background:var(--ink);color:#fff}
+.hspacer{flex:1}
+.who{font-size:11px;color:var(--muted2)}
+
+main{max-width:1180px;margin:0 auto;padding:20px 20px 44px}
+.view{display:none}
+.view.active{display:block}
+
+.eyebrow{font-family:var(--disp);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ac)}
+.hero{max-width:640px;margin-bottom:18px}
+.hero .eyebrow{display:block;margin-bottom:5px}
+.hero h1{font-size:23px;line-height:1.2;margin-bottom:5px}
+.hero p{color:var(--muted);font-size:12.5px;line-height:1.55}
+
+/* Monogramm statt Emoji */
+.mono{width:30px;height:30px;border-radius:9px;background:var(--tint);color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:11.5px;flex:none;letter-spacing:.01em}
+.mono.on-dark{background:rgba(255,255,255,.12);color:#fff}
+
+/* Personas */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px}
+.pcard{background:#fff;border:1px solid var(--b08);border-radius:var(--rl);padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:transform .15s,border-color .15s}
+.pcard:hover{border-color:var(--ac);transform:translateY(-2px)}
+.pcard .peyebrow{font-family:var(--disp);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ac)}
+.pcard h3{font-size:15px;margin-top:2px}
+.pcard .pain{font-size:11.5px;color:var(--muted);line-height:1.45;flex:1}
+.pmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:9px;border-top:1px solid var(--b07);font-size:11px}
+.pmeta .cnt{font-weight:700;color:var(--ac);font-family:var(--disp)}
+.pmeta .mon{color:var(--muted2)}
+
+/* Paket-Detail */
+.backlink{font-size:11.5px;font-weight:600;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;margin-bottom:12px}
+.backlink:hover{color:var(--ac)}
+.panel{background:var(--dark);color:#fff;border-radius:var(--rl);padding:20px;margin-bottom:16px}
+.panel .kicker{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--mint);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.panel h2{font-size:20px;color:#fff;margin-bottom:6px}
+.panel p{font-size:12.5px;color:var(--dark-body);max-width:600px;line-height:1.55}
+.pstats{display:flex;gap:22px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.14)}
+.pstats .l{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--dark-label)}
+.pstats .v{font-family:var(--disp);font-size:16px;font-weight:800;color:#fff;margin-top:3px}
+
+.grouplabel{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--strong);margin:0 0 9px}
+.toolgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+.ttile{border:1px solid var(--b08);background:#fff;border-radius:var(--rm);padding:12px;display:flex;flex-direction:column;gap:7px}
+.ttile .thead{display:flex;align-items:center;gap:9px}
+.ttile h4{font-size:12.5px;font-weight:600;font-family:var(--body)}
+.ttile .desc{font-size:10.5px;color:var(--muted);line-height:1.4;flex:1}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.minitag{font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:99px;display:inline-block}
+.minitag.free{background:rgba(31,122,77,.09);color:var(--ac)}
+.minitag.quiet{background:var(--tint);color:var(--muted2)}
+.minitag.warn{background:#fdf6e7;border:1px solid #f0e2bf;color:#6b5518}
+.ttile .go{font-size:11px;font-weight:600;padding:7px 0;border-radius:999px;border:1px solid var(--b12);background:none;cursor:pointer;color:var(--ink);transition:border-color .15s,color .15s}
+.ttile .go:hover:not(:disabled){border-color:var(--ac);color:var(--ac)}
+.ttile .go:disabled{color:var(--muted2);cursor:not-allowed}
+
+.monetbox{background:#fff;border:1px solid var(--b08);border-left:3px solid var(--ac);border-radius:var(--rm);padding:15px;margin-top:16px}
+.monetbox h4{font-size:12px;margin-bottom:6px;font-family:var(--disp)}
+.monetbox p{font-size:11.5px;color:var(--muted);line-height:1.55}
+.monetbox p b{color:var(--ink);font-weight:600}
+
+/* Matrix */
+.tablewrap{overflow-x:auto;background:#fff;border:1px solid var(--b08);border-radius:var(--rl)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:11.5px}
+th,td{padding:10px 11px;text-align:left;border-bottom:1px solid var(--b07)}
+th{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.06em;color:var(--muted2);text-transform:uppercase;white-space:nowrap}
+td.tool{font-weight:600;white-space:nowrap;color:var(--ink)}
+td.c{text-align:center;width:110px}
+tbody tr:hover{background:var(--tint)}
+tbody tr:last-child td{border-bottom:none}
+.dot{color:var(--ac);font-size:14px}
+.dot.sec{color:var(--b12);font-size:14px}
+.mnote{font-size:11.5px;color:var(--muted);margin-top:11px;line-height:1.55}
+.mnote b{color:var(--ink)}
+
+.legend{max-width:1180px;margin:24px auto 0;padding:16px 20px 0;border-top:1px solid var(--b07)}
+.legend .flag{border-radius:12px;padding:11px 14px;font-size:11.5px;line-height:1.55;background:var(--tint);color:var(--muted);margin-bottom:8px}
+.legend .flag b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hwrap">
+    <div class="logo">energetisiert<span>.</span></div>
+    <div class="seg">
+      <button class="on" data-view="personas">Für wen</button>
+      <button data-view="paket">Paket</button>
+      <button data-view="matrix">Überschneidungen</button>
+    </div>
+    <div class="hspacer"></div>
+    <span class="who">Prototyp · Zielgruppen-Struktur</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. PERSONAS -->
+  <section class="view active" id="view-personas">
+    <div class="hero">
+      <span class="eyebrow">Schritt 1</span>
+      <h1>Für wen ist es gedacht</h1>
+      <p>Vier Pakete statt einer Werkzeugliste. Jedes Paket zeigt nur die Kernwerkzeuge dieser Rolle. Ein Werkzeug darf in mehreren Paketen stecken.</p>
+    </div>
+    <div class="pgrid" id="pgrid"></div>
+  </section>
+
+  <!-- 2. PAKET-DETAIL -->
+  <section class="view" id="view-paket">
+    <button class="backlink" onclick="document.querySelector('.seg button[data-view=personas]').click()">← Alle Zielgruppen</button>
+    <div id="paketWrap"></div>
+  </section>
+
+  <!-- 3. MATRIX -->
+  <section class="view" id="view-matrix">
+    <div class="hero">
+      <span class="eyebrow">Für dich und Jakob</span>
+      <h1>Welches Werkzeug steckt in welchem Paket</h1>
+      <p>Gefüllter Punkt heißt Kernwerkzeug dieser Zielgruppe, heller Punkt heißt sinnvoll, aber nicht der Hauptgrund für die Anmeldung. In den Paketen selbst zeigen wir nur die Kernwerkzeuge.</p>
+    </div>
+    <div class="tablewrap"><table id="matrixTable"></table></div>
+    <p class="mnote" id="matrixNote"></p>
+  </section>
+
+</main>
+
+<div class="legend">
+  <div class="flag"><b>Marke:</b> energetisiert., Signalgrün #1F7A4D als Akzent, Tiefgrün #14281E für dunkle Flächen, für alle vier Pakete gleich</div>
+  <div class="flag"><b>Später denkbar:</b> White-Label-Instanz für immoVerwalterei im Vermieter-Paket, eigener Absender statt zweitem Produkt</div>
+</div>
+
+<script>
+const TOOLS = {
+  wechsel:   {name:'Eigentümerwechsel-Check', mono:'EW', desc:'Pflichten und Fristen beim Eigentümerwechsel, inklusive Nachrüstpflichten.'},
+  ausweis:   {name:'Energieausweis-Check', mono:'EA', desc:'Gültigkeit, Aussagekraft und Pflichten rund um den Energieausweis.'},
+  gebaeude:  {name:'Gebäudeabgrenzung', mono:'GA', desc:'Zählt ein Gebäudeteil als eigenständiges Gebäude im Förderrecht.'},
+  strategie: {name:'Förderstrategie', mono:'FS', desc:'Welcher Förderweg, in welcher Reihenfolge, mit welchen Fristen.'},
+  wirtsch:   {name:'Wirtschaftlichkeitsrechner', mono:'WR', desc:'Kosten, Förderung und Amortisation der energetischen Sanierung.'},
+  foerder:   {name:'Förderrechner Heizungstausch', mono:'FH', desc:'Zuschuss für den Heizungstausch, Wohn- und Nichtwohngebäude.'},
+  baukosten: {name:'Baukostenüberwacher', mono:'BK', desc:'Nachträge und Kosten laufend gegen Markt und Finanzierung prüfen.'},
+  co2:       {name:'CO2-Rechner', mono:'CO', desc:'CO2-Kosten zwischen Vermieter und Mieter nach Stufenmodell aufteilen.'},
+  fixflip:   {name:'Fix & Flip Kalkulation', mono:'FF', desc:'Kauf, Sanierung, Verkauf, Rendite und Verhandlungsspielraum.'},
+  uwert:     {name:'U-Wert-Rechner', mono:'UW', desc:'Wärmedurchgang eines Bauteils, Abgleich mit den BEG-Anforderungen.'},
+  heizlast:  {name:'Heizlastrechner', mono:'HL', desc:'Überschlägige Heizlast als Basis für die Dimensionierung der Wärmepumpe.', ueberschlag:true},
+  schall:    {name:'Schallrechner', mono:'SR', desc:'Abstand und Immissionsrichtwerte nach TA Lärm für die Außeneinheit.', ueberschlag:true}
+};
+
+const PERSONAS = [
+  {
+    id:'haeusle', name:'Häuslebauer', sub:'Privat, selbst genutzt',
+    pain:'Kauft oder saniert einmal im Leben, kennt weder BEG noch GEG, hat Angst Fristen und Förderungen zu verpassen.',
+    core:['wechsel','strategie','wirtsch','foerder','ausweis','heizlast'],
+    extra:['baukosten','uwert','schall'],
+    monet:'<b>Pay per Fall.</b> Eigentümerwechsel-Check kostenlos als Einstieg und Lead-Erfassung, danach Einmalpreis pro Objekt. Abo passt hier nicht, die Sanierung ist ein einmaliges Ereignis.',
+    modus:'Einzelkonto, meist ein Objekt, geführter Ablauf mit vielen Erklärtexten'
+  },
+  {
+    id:'investor', name:'Investor & Projektentwickler', sub:'Mehrere Objekte, Rendite im Blick',
+    pain:'Muss vor dem Kauf in Minuten wissen, ob ein Objekt rechnet, und braucht belastbare Zahlen für Bank und Exit.',
+    core:['fixflip','gebaeude','wirtsch','baukosten'],
+    extra:['strategie','wechsel','ausweis','uwert','heizlast'],
+    monet:'<b>Abo, Stufe Team.</b> Viele Objekte parallel, Objektvergleich und Export sind das Kaufargument. Gestaffelt nach Anzahl aktiver Objekte statt nach Nutzern.',
+    modus:'Organisationskonto, viele Objekte nebeneinander, Vergleichsansicht statt Einzelfall'
+  },
+  {
+    id:'heizung', name:'Heizungsbauer', sub:'Verkauft im Kundengespräch',
+    pain:'Muss beim Kunden Förderhöhe, Wärmepumpengröße und Aufstellungsort sofort seriös beziffern, sonst platzt der Auftrag.',
+    core:['foerder','heizlast','schall','strategie'],
+    extra:['gebaeude','uwert','ausweis','wirtsch'],
+    monet:'<b>Abo plus White Label, höchster Deckungsbeitrag.</b> Heizlast, Schall und Förderung decken den kompletten Angebotsweg ab. Eigenes Logo im PDF, mehrere Monteure unter einem Konto.',
+    modus:'Organisationskonto, Fälle statt Objekte, Tempo vor Erklärung, mobil im Kundengespräch'
+  },
+  {
+    id:'vermieter', name:'Vermieter & Verwalter', sub:'Laufender Betrieb, WEG',
+    pain:'Muss jährlich korrekt abrechnen, haftet bei Fehlern, und steht bei WEG-Beschlüssen unter Rechtfertigungsdruck.',
+    core:['co2','ausweis','gebaeude'],
+    extra:['strategie','wirtsch','foerder','uwert','schall'],
+    monet:'<b>Jahresabo nach Einheitenzahl.</b> Wiederkehrender Bedarf jede Abrechnungsperiode, dadurch die stabilste Erlösquelle. Natürliche Brücke zu immoVerwalterei.',
+    modus:'Organisationskonto, Objekte mit vielen Einheiten, Wiederholung Jahr für Jahr'
+  }
+];
+
+const SHARED = {};
+Object.keys(TOOLS).forEach(k=>{
+  SHARED[k] = PERSONAS.filter(p=>p.core.includes(k)||p.extra.includes(k)).length;
+});
+
+function renderPersonas(){
+  document.getElementById('pgrid').innerHTML = PERSONAS.map((p,i)=>`
+    <div class="pcard" onclick="openPaket('${p.id}')">
+      <span class="peyebrow">${String(i+1).padStart(2,'0')} — Zielgruppe</span>
+      <h3>${p.name}</h3>
+      <div class="pain">${p.pain}</div>
+      <div class="pmeta">
+        <span class="cnt">${p.core.length} Kernwerkzeuge</span>
+        <span class="mon">${p.sub}</span>
+      </div>
+    </div>`).join('');
+}
+
+function tile(key){
+  const t = TOOLS[key];
+  const soon = key==='strategie';
+  const free = key==='wechsel';
+  return `<div class="ttile">
+    <div class="thead"><div class="mono">${t.mono}</div><h4>${t.name}</h4></div>
+    <div class="tags">
+      ${free?'<span class="minitag free">Kostenlos</span>':''}
+      ${soon?'<span class="minitag quiet">In Entwicklung</span>':''}
+      ${t.ueberschlag?'<span class="minitag warn">Überschlag, kein Nachweis</span>':''}
+      ${SHARED[key]>1?`<span class="minitag quiet">in ${SHARED[key]} Paketen</span>`:''}
+    </div>
+    <div class="desc">${t.desc}</div>
+    <button class="go" ${soon?'disabled':''}>${soon?'Bald verfügbar':'Öffnen'}</button>
+  </div>`;
+}
+
+function openPaket(id){
+  const p = PERSONAS.find(x=>x.id===id);
+  const i = PERSONAS.indexOf(p);
+  document.getElementById('paketWrap').innerHTML = `
+    <div class="panel">
+      <div class="kicker"><span class="mono on-dark">${String(i+1).padStart(2,'0')}</span>Zielgruppen-Paket</div>
+      <h2>${p.name}</h2>
+      <p>${p.pain}</p>
+      <div class="pstats">
+        <div><div class="l">Kernwerkzeuge</div><div class="v">${p.core.length}</div></div>
+        <div><div class="l">Kontomodus</div><div class="v" style="font-size:12.5px;font-weight:600;color:var(--dark-body)">${p.modus}</div></div>
+      </div>
+    </div>
+    <div class="grouplabel">Kernwerkzeuge dieses Pakets</div>
+    <div class="toolgrid">${p.core.map(k=>tile(k)).join('')}</div>
+    <div class="monetbox">
+      <h4>Monetarisierung</h4>
+      <p>${p.monet}</p>
+    </div>`;
+  document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('on'));
+  document.querySelector('.seg button[data-view=paket]').classList.add('on');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-paket').classList.add('active');
+  window.scrollTo({top:0});
+}
+
+function renderMatrix(){
+  const head = `<thead><tr><th>Werkzeug</th>${PERSONAS.map(p=>`<th style="text-align:center">${p.name}</th>`).join('')}<th style="text-align:center">Pakete</th></tr></thead>`;
+  const rows = Object.keys(TOOLS).map(k=>{
+    const cells = PERSONAS.map(p=>{
+      if(p.core.includes(k)) return `<td class="c"><span class="dot">●</span></td>`;
+      if(p.extra.includes(k)) return `<td class="c"><span class="dot sec">●</span></td>`;
+      return `<td class="c" style="color:var(--b10)">·</td>`;
+    }).join('');
+    return `<tr><td class="tool">${TOOLS[k].name}</td>${cells}<td class="c" style="font-weight:700">${SHARED[k]}</td></tr>`;
+  }).join('');
+  document.getElementById('matrixTable').innerHTML = head + `<tbody>${rows}</tbody>`;
+
+  const multi = Object.keys(TOOLS).filter(k=>SHARED[k]>=3).map(k=>TOOLS[k].name);
+  document.getElementById('matrixNote').innerHTML =
+    `In mindestens drei von vier Paketen: <b>${multi.join(', ')}</b>. Diese Werkzeuge zuerst bauen, sie zahlen auf jede Zielgruppe gleichzeitig ein. Fix &amp; Flip und der CO2-Rechner sind dagegen Spezialisten, jeweils nur in einem Paket Kernwerkzeug.`;
+}
+
+renderPersonas();
+renderMatrix();
+
+document.querySelectorAll('.seg button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(btn.dataset.view==='paket' && !document.getElementById('paketWrap').innerHTML.trim()){
+      openPaket('haeusle'); return;
+    }
+    document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    window.scrollTo({top:0});
+  });
+});
+</script>
+
+</body>
+</html>

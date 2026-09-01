@@ -10,7 +10,7 @@ export async function origenErlaubt(): Promise<boolean> {
   const h = await headers();
   const origin = h.get('origin') ?? h.get('referer') ?? '';
 
-  const erlaubt = (process.env.ALLOWED_ORIGINS ?? 'https://tool.energetisiert.de,https://energetisiert.de')
+  const erlaubt = (process.env.ALLOWED_ORIGINS ?? 'https://tools.energetisiert.de,https://energetisiert.de')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
@@ -25,6 +25,21 @@ export async function origenErlaubt(): Promise<boolean> {
 
   if (process.env.NODE_ENV !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
     return true;
+  }
+
+  // Jede eigene *.energetisiert.de-Subdomain gilt als vertrauenswuerdig --
+  // der Check dient der CSRF-Abwehr gegen FREMDE Origins, und ein Umbenennen
+  // der Hub-Domain (tool. vs. tools.) darf Login/Registrierung nicht brechen.
+  try {
+    const originUrl = new URL(origin);
+    if (
+      originUrl.protocol === 'https:' &&
+      (originUrl.hostname === 'energetisiert.de' || originUrl.hostname.endsWith('.energetisiert.de'))
+    ) {
+      return true;
+    }
+  } catch {
+    // origin war keine URL -- unten regulaer ablehnen.
   }
 
   const ok = erlaubt.some((o) => origin === o || origin.startsWith(`${o}/`));

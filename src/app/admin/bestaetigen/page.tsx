@@ -1,3 +1,4 @@
+import { AuthShell } from '@/components/ui/AuthShell';
 import { Card } from '@/components/ui/Card';
 import { Fehlermeldung } from '@/components/ui/Field';
 import { verifyApprovalToken } from '@/lib/security/approval-token';
@@ -12,9 +13,11 @@ export default async function BestaetigenPage({ searchParams }: { searchParams: 
 
   if (!profileId) {
     return (
-      <Card title="Link ungültig">
-        <Fehlermeldung text="Dieser Bestätigungslink ist ungültig oder abgelaufen (gültig 24 Stunden nach Versand der Mail)." />
-      </Card>
+      <AuthShell>
+        <Card title="Link ungültig">
+          <Fehlermeldung text="Dieser Bestätigungslink ist ungültig oder abgelaufen (gültig 24 Stunden nach Versand der Mail)." />
+        </Card>
+      </AuthShell>
     );
   }
 
@@ -28,25 +31,29 @@ export default async function BestaetigenPage({ searchParams }: { searchParams: 
 
   if (!profil || profil.status !== 'pending') {
     return (
-      <Card title="Bereits bearbeitet">
-        <p className="text-[15px] text-strong">
-          Dieses Konto ({email}) wurde bereits bearbeitet (Status: {profil?.status ?? 'unbekannt'}).
-        </p>
-      </Card>
+      <AuthShell>
+        <Card title="Bereits bearbeitet">
+          <p className="text-[15px] text-strong">
+            Dieses Konto ({email}) wurde bereits bearbeitet (Status: {profil?.status ?? 'unbekannt'}).
+          </p>
+        </Card>
+      </AuthShell>
     );
   }
 
   return (
-    <Card title="Neue Registrierung bestätigen">
-      <div className="mb-5 space-y-1 text-[14.5px] text-strong">
-        <p>
-          <span className="text-muted2">Name:</span> {profil.full_name || '—'}
-        </p>
-        <p>
-          <span className="text-muted2">E-Mail:</span> {email}
-        </p>
-      </div>
-      <BestaetigenButton token={token!} />
-    </Card>
+    <AuthShell>
+      <Card title="Neue Registrierung bestätigen">
+        <div className="mb-5 space-y-1 text-[14.5px] text-strong">
+          <p>
+            <span className="text-muted2">Name:</span> {profil.full_name || '—'}
+          </p>
+          <p>
+            <span className="text-muted2">E-Mail:</span> {email}
+          </p>
+        </div>
+        <BestaetigenButton token={token!} />
+      </Card>
+    </AuthShell>
   );
 }

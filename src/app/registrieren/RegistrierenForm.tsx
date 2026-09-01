@@ -12,10 +12,14 @@ export function RegistrierenForm({ redirectTo }: { redirectTo: string }) {
     return (
       <div className="space-y-3 text-center">
         <p className="text-[15px] text-strong">
-          Fast geschafft — bitte bestätige zuerst deine E-Mail-Adresse über den Link, den wir dir geschickt haben.
+          Registrierung eingegangen — unser Team prüft deine Anmeldung und schaltet dein Konto frei.
         </p>
         <p className="text-[13px] text-muted2">
-          Danach prüft unser Team deine Registrierung und schaltet dein Konto frei. Das kann etwas dauern.
+          Du kannst dich schon jetzt{' '}
+          <Link href="/login" className="font-semibold text-ac hover:underline">
+            anmelden
+          </Link>{' '}
+          und siehst dort den Stand deiner Freischaltung.
         </p>
       </div>
     );
@@ -45,6 +49,18 @@ export function RegistrierenForm({ redirectTo }: { redirectTo: string }) {
         />
       </Field>
       <SubmitButton pending={pending}>Registrieren</SubmitButton>
+      <p className="text-[12px] leading-relaxed text-muted2">
+        Wir verwenden deine Angaben ausschließlich für dein Nutzerkonto und die Freischaltung. Details in unserer{' '}
+        <a
+          href="https://energetisiert.de/datenschutz/"
+          target="_blank"
+          rel="noreferrer"
+          className="font-semibold text-ac hover:underline"
+        >
+          Datenschutzerklärung
+        </a>
+        .
+      </p>
       <p className="text-center text-[13px] text-muted2">
         Schon ein Konto?{' '}
         <Link href={`/login?redirect_to=${encodeURIComponent(redirectTo)}`} className="font-semibold text-ac hover:underline">
