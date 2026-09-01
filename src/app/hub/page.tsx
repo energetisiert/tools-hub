@@ -5,15 +5,19 @@ import { GEPLANTE_TOOLS, LIVE_TOOLS, type HubTool } from './tools';
 
 export const dynamic = 'force-dynamic';
 
+/** Reihenfolge der Paketstufen -- fuer "Ab Pro"/"Ab Elite" an gesperrten Kacheln. */
+const PAKET_STUFEN = ['basic', 'pro', 'elite'];
+
 /**
  * Die Tool-Uebersicht nach dem Login -- die Zwischenstelle zwischen Konto und
  * den Rechner-Tools. Zugriffslogik:
  *   1. Keine Session -> /login
  *   2. Status nicht 'approved' -> /warten-auf-freischaltung
- *   3. package_id null -> Vollzugriff (Uebergangszustand, bis Pakete definiert
- *      sind); sonst entscheidet package_tools, welche Kacheln oeffnen.
- * Wichtig: hier zaehlt die LIVE-Datenbank (RLS-geschuetzte profiles-Abfrage),
- * nicht der bis zu ~1h alte JWT-Claim -- der Claim ist nur fuer schnelle
+ *   3. Paket (profiles.package_id -> package_tools) entscheidet, welche
+ *      Kacheln oeffnen; package_id null = bewusste Admin-Ausnahme mit
+ *      Vollzugriff (Freischaltung weist normalen Konten automatisch Basic zu).
+ * Wichtig: hier zaehlt die LIVE-Datenbank (RLS-geschuetzte Abfragen), nicht
+ * der bis zu ~1h alte JWT-Claim -- der Claim ist nur fuer schnelle
  * Middleware-Redirects in den Tools gedacht.
  */
 export default async function HubPage() {
@@ -32,12 +36,28 @@ export default async function HubPage() {
     redirect('/warten-auf-freischaltung');
   }
 
-  // null = Vollzugriff auf alle Live-Tools (noch kein Paket zugewiesen).
-  let freigeschalteteSlugs: Set<string> | null = null;
-  if (profil?.package_id) {
-    const { data: paketTools } = await supabase.from('package_tools').select('tool_slug').eq('package_id', profil.package_id);
-    freigeschalteteSlugs = new Set((paketTools ?? []).map((t) => t.tool_slug));
-  }
+  const [{ data: pakete }, { data: paketTools }] = await Promise.all([
+    supabase.from('packages').select('id, slug, name'),
+    supabase.from('package_tools').select('package_id, tool_slug'),
+  ]);
+
+  const eigenesPaket = profil?.package_id ? (pakete ?? []).find((p) => p.id === profil.package_id) ?? null : null;
+
+  // null = Vollzugriff (kein Paket zugewiesen -- Admin-Ausnahme).
+  const freigeschalteteSlugs: Set<string> | null = eigenesPaket
+    ? new Set((paketTools ?? []).filter((pt) => pt.package_id === eigenesPaket.id).map((pt) => pt.tool_slug))
+    : null;
+
+  // Fuer gesperrte Kacheln: die guenstigste Paketstufe, die das Tool enthaelt.
+  const abStufe = (slug: string): string | null => {
+    for (const stufe of PAKET_STUFEN) {
+      const paket = (pakete ?? []).find((p) => p.slug === stufe);
+      if (paket && (paketTools ?? []).some((pt) => pt.package_id === paket.id && pt.tool_slug === slug)) {
+        return paket.name;
+      }
+    }
+    return null;
+  };
 
   const vorname = (profil?.full_name ?? '').trim().split(/\s+/)[0] || null;
 
@@ -53,21 +73,27 @@ export default async function HubPage() {
             Einmal angemeldet, überall erkannt — die Anmeldung gilt automatisch auf allen Tool-Subdomains.
           </p>
         </div>
-        <form action={logoutAction}>
-          <button
-            type="submit"
-            className="rounded-full border border-black/[0.12] px-4 py-2 text-[12.5px] font-semibold text-strong transition-colors hover:border-ac hover:text-ac"
-          >
-            Abmelden
-          </button>
-        </form>
+        <div className="flex items-center gap-3">
+          <span className="rounded-full bg-dark px-3.5 py-1.5 text-[11.5px] font-bold text-mint">
+            Paket: {eigenesPaket?.name ?? 'Vollzugriff'}
+          </span>
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="rounded-full border border-black/[0.12] px-4 py-2 text-[12.5px] font-semibold text-strong transition-colors hover:border-ac hover:text-ac"
+            >
+              Abmelden
+            </button>
+          </form>
+        </div>
       </div>
 
       <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Verfügbare Werkzeuge</h2>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-3">
-        {LIVE_TOOLS.map((tool) => (
-          <ToolKachel key={tool.slug} tool={tool} gesperrt={freigeschalteteSlugs !== null && !freigeschalteteSlugs.has(tool.slug)} />
-        ))}
+        {LIVE_TOOLS.map((tool) => {
+          const gesperrt = freigeschalteteSlugs !== null && !freigeschalteteSlugs.has(tool.slug);
+          return <ToolKachel key={tool.slug} tool={tool} gesperrtAb={gesperrt ? abStufe(tool.slug) : null} />;
+        })}
       </div>
 
       <h2 className="mb-3 mt-9 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">In Entwicklung</h2>
@@ -80,19 +106,32 @@ export default async function HubPage() {
   );
 }
 
-function ToolKachel({ tool, gesperrt = false, geplant = false }: { tool: HubTool; gesperrt?: boolean; geplant?: boolean }) {
+function ToolKachel({
+  tool,
+  gesperrtAb = null,
+  geplant = false,
+}: {
+  tool: HubTool;
+  /** Name der guenstigsten Paketstufe, die das Tool enthaelt -- nur bei gesperrten Kacheln gesetzt. */
+  gesperrtAb?: string | null;
+  geplant?: boolean;
+}) {
+  const gesperrt = gesperrtAb !== null;
   return (
-    <div className="flex flex-col gap-2 rounded-[14px] border border-black/[0.08] bg-white p-3.5">
+    <div className={`flex flex-col gap-2 rounded-[14px] border border-black/[0.08] bg-white p-3.5 ${gesperrt ? 'opacity-75' : ''}`}>
       <div className="flex items-center gap-2.5">
         <span className="font-disp flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-tint text-[11.5px] font-bold text-ink">
           {tool.mono}
         </span>
         <h3 className="text-[12.5px] font-semibold leading-snug">{tool.name}</h3>
       </div>
-      {(tool.ueberschlag || geplant) && (
+      {(tool.ueberschlag || geplant || gesperrt) && (
         <div className="flex flex-wrap gap-1">
           {geplant && (
             <span className="rounded-full bg-tint px-2 py-0.5 text-[9.5px] font-bold text-muted2">In Entwicklung</span>
+          )}
+          {gesperrt && (
+            <span className="rounded-full bg-tint px-2 py-0.5 text-[9.5px] font-bold text-muted2">Ab Paket {gesperrtAb}</span>
           )}
           {tool.ueberschlag && (
             <span className="rounded-full border border-[#f0e2bf] bg-[#fdf6e7] px-2 py-0.5 text-[9.5px] font-bold text-[#6b5518]">
