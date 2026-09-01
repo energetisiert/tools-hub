@@ -7,8 +7,6 @@
 // (verify_jwt: false beim Deploy), sondern ueber ein gemeinsames Secret im
 // Header, das der Trigger mitschickt.
 //
-// Noch nicht deployed -- wartet auf RESEND_API_KEY (siehe Projektplan).
-//
 // Benoetigte Edge-Function-Secrets (Supabase Dashboard -> Edge Functions ->
 // tools-hub -> Secrets, oder `supabase secrets set`):
 //   RESEND_API_KEY        -- von resend.com
