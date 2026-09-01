@@ -64,7 +64,7 @@ Deno.serve(async (req: Request) => {
   const fullName: string | null = payload.record.full_name ?? null;
 
   const token = await issueApprovalToken(profileId, requestTokenSecret);
-  const bestaetigenUrl = `https://tools.energetisiert.de/admin/bestaetigen?token=${encodeURIComponent(token)}`;
+  const bestaetigenUrl = `https://tool.energetisiert.de/admin/bestaetigen?token=${encodeURIComponent(token)}`;
 
   const resendResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',

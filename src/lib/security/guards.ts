@@ -10,14 +10,14 @@ export async function origenErlaubt(): Promise<boolean> {
   const h = await headers();
   const origin = h.get('origin') ?? h.get('referer') ?? '';
 
-  const erlaubt = (process.env.ALLOWED_ORIGINS ?? 'https://tools.energetisiert.de,https://energetisiert.de')
+  const erlaubt = (process.env.ALLOWED_ORIGINS ?? 'https://tool.energetisiert.de,https://energetisiert.de')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 
-  // Feste Vercel-Aliase dieses Projekts zusaetzlich erlauben, solange die
-  // eigene Domain noch nicht verknuepft ist -- ohne das wuerde JEDE Anmeldung
-  // ueber *.vercel.app fehlschlagen, bevor tools.energetisiert.de aktiv ist.
+  // Feste Vercel-Aliase dieses Projekts zusaetzlich erlauben (z. B. fuer
+  // Deployments, bevor eine eigene Domain verknuepft ist) -- ohne das wuerde
+  // JEDE Anmeldung ueber *.vercel.app fehlschlagen.
   erlaubt.push('https://tools-hub-energetisiert.vercel.app', 'https://tools-hub.vercel.app', 'https://tools-hub-git-main-energetisiert.vercel.app');
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) erlaubt.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
   if (process.env.VERCEL_URL) erlaubt.push(`https://${process.env.VERCEL_URL}`);
