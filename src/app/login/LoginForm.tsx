@@ -16,10 +16,10 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
       {state?.fehler && <Fehlermeldung text={state.fehler} />}
 
       <Field label="E-Mail">
-        <TextInput type="email" name="email" required autoComplete="email" />
+        <TextInput type="email" name="email" required autoComplete="email" placeholder="z. B. name@energetisiert.de" />
       </Field>
       <Field label="Passwort">
-        <TextInput type="password" name="passwort" required autoComplete="current-password" />
+        <TextInput type="password" name="passwort" required autoComplete="current-password" placeholder="dein Passwort" />
       </Field>
       <SubmitButton pending={pending}>Anmelden</SubmitButton>
       <p className="text-center text-[13px] text-muted2">

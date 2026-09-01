@@ -7,13 +7,16 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function loginAction(_prev: { fehler: string } | null, formData: FormData): Promise<{ fehler: string } | null> {
   if (honeypotAusgeloest(formData.get('website_url'))) {
+    console.warn('loginAction: Honeypot-Feld war ausgefuellt.');
     return { fehler: 'Anmeldung fehlgeschlagen.' };
   }
   if (!(await origenErlaubt())) {
+    // origenErlaubt() loggt den genauen Origin bereits selbst.
     return { fehler: 'Anmeldung fehlgeschlagen.' };
   }
   const botCheck = await checkBotId({ advancedOptions: { checkLevel: 'basic' } });
   if (botCheck.isBot) {
+    console.warn('loginAction: BotID hat den Request als Bot eingestuft.');
     return { fehler: 'Anmeldung fehlgeschlagen.' };
   }
 
@@ -26,6 +29,7 @@ export async function loginAction(_prev: { fehler: string } | null, formData: Fo
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password: passwort });
   if (error) {
+    console.error('loginAction: signInWithPassword fehlgeschlagen:', error.code, error.message);
     return { fehler: 'E-Mail oder Passwort ist falsch.' };
   }
 

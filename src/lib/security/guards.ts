@@ -14,6 +14,12 @@ export async function origenErlaubt(): Promise<boolean> {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
+
+  // Feste Vercel-Aliase dieses Projekts zusaetzlich erlauben, solange die
+  // eigene Domain noch nicht verknuepft ist -- ohne das wuerde JEDE Anmeldung
+  // ueber *.vercel.app fehlschlagen, bevor tools.energetisiert.de aktiv ist.
+  erlaubt.push('https://tools-hub-energetisiert.vercel.app', 'https://tools-hub.vercel.app', 'https://tools-hub-git-main-energetisiert.vercel.app');
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) erlaubt.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
   if (process.env.VERCEL_URL) erlaubt.push(`https://${process.env.VERCEL_URL}`);
   if (process.env.VERCEL_BRANCH_URL) erlaubt.push(`https://${process.env.VERCEL_BRANCH_URL}`);
 
@@ -21,7 +27,14 @@ export async function origenErlaubt(): Promise<boolean> {
     return true;
   }
 
-  return erlaubt.some((o) => origin === o || origin.startsWith(`${o}/`));
+  const ok = erlaubt.some((o) => origin === o || origin.startsWith(`${o}/`));
+  if (!ok) {
+    // Bewusst als Warnung geloggt (nicht Teil der stillen "Bots nicht
+    // nachjustieren lassen"-Antwort) -- sonst ist ein falscher Origin-Check
+    // ueber die Logs nicht von einem echten Bot-Block zu unterscheiden.
+    console.warn(`origenErlaubt: Origin "${origin}" nicht in der Allowlist.`);
+  }
+  return ok;
 }
 
 /** Honeypot: das unsichtbare Feld website_url darf nie gefuellt sein. */

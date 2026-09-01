@@ -8,13 +8,16 @@ export type RegistrierenState = { fehler: string } | { erfolg: true } | null;
 
 export async function registrierenAction(_prev: RegistrierenState, formData: FormData): Promise<RegistrierenState> {
   if (honeypotAusgeloest(formData.get('website_url'))) {
+    console.warn('registrierenAction: Honeypot-Feld war ausgefuellt.');
     return { fehler: 'Registrierung fehlgeschlagen.' };
   }
   if (!(await origenErlaubt())) {
+    // origenErlaubt() loggt den genauen Origin bereits selbst.
     return { fehler: 'Registrierung fehlgeschlagen.' };
   }
   const botCheck = await checkBotId({ advancedOptions: { checkLevel: 'basic' } });
   if (botCheck.isBot) {
+    console.warn('registrierenAction: BotID hat den Request als Bot eingestuft.');
     return { fehler: 'Registrierung fehlgeschlagen.' };
   }
 
@@ -34,6 +37,7 @@ export async function registrierenAction(_prev: RegistrierenState, formData: For
   });
 
   if (error) {
+    console.error('registrierenAction: supabase.auth.signUp fehlgeschlagen:', error.code, error.message);
     if (error.message.toLowerCase().includes('already registered') || error.code === 'user_already_exists') {
       return { fehler: 'Für diese E-Mail-Adresse existiert bereits ein Konto.' };
     }

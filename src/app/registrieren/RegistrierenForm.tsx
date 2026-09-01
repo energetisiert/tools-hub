@@ -29,13 +29,20 @@ export function RegistrierenForm({ redirectTo }: { redirectTo: string }) {
       {state && 'fehler' in state && <Fehlermeldung text={state.fehler} />}
 
       <Field label="Name">
-        <TextInput type="text" name="voller_name" autoComplete="name" />
+        <TextInput type="text" name="voller_name" autoComplete="name" placeholder="z. B. Max Mustermann" />
       </Field>
       <Field label="E-Mail">
-        <TextInput type="email" name="email" required autoComplete="email" />
+        <TextInput type="email" name="email" required autoComplete="email" placeholder="z. B. name@energetisiert.de" />
       </Field>
       <Field label="Passwort">
-        <TextInput type="password" name="passwort" required minLength={8} autoComplete="new-password" />
+        <TextInput
+          type="password"
+          name="passwort"
+          required
+          minLength={8}
+          autoComplete="new-password"
+          placeholder="mindestens 8 Zeichen"
+        />
       </Field>
       <SubmitButton pending={pending}>Registrieren</SubmitButton>
       <p className="text-center text-[13px] text-muted2">
