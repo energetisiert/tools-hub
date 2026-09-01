@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { logoutAction } from './actions';
@@ -30,7 +31,11 @@ export default async function HubPage() {
     redirect('/login');
   }
 
-  const { data: profil } = await supabase.from('profiles').select('status, package_id, full_name').eq('id', user.id).single();
+  const { data: profil } = await supabase
+    .from('profiles')
+    .select('status, package_id, full_name, role')
+    .eq('id', user.id)
+    .single();
 
   if ((profil?.status ?? 'pending') !== 'approved') {
     redirect('/warten-auf-freischaltung');
@@ -77,6 +82,14 @@ export default async function HubPage() {
           <span className="rounded-full bg-dark px-3.5 py-1.5 text-[11.5px] font-bold text-mint">
             Paket: {eigenesPaket?.name ?? 'Vollzugriff'}
           </span>
+          {profil?.role === 'admin' && (
+            <Link
+              href="/admin/nutzer"
+              className="rounded-full border border-black/[0.12] px-4 py-2 text-[12.5px] font-semibold text-strong transition-colors hover:border-ac hover:text-ac"
+            >
+              Verwaltung
+            </Link>
+          )}
           <form action={logoutAction}>
             <button
               type="submit"
