@@ -1,11 +1,20 @@
 'use server';
 
-import { checkBotId } from 'botid/server';
 import { honeypotAusgeloest, origenErlaubt } from '@/lib/security/guards';
 import { createClient } from '@/lib/supabase/server';
 
 export type RegistrierenState = { fehler: string } | { erfolg: true } | null;
 
+/**
+ * Bewusst OHNE Vercel BotID, anders als die Rechner-Tools: dort schuetzt
+ * BotID proprietaere Formeln vor automatisiertem Scraping in grossem Stil --
+ * hier gibt es nichts dergleichen zu schuetzen, und ein Bot gewinnt durch
+ * Registrieren nichts (jeder Account bleibt `pending`, bis ein Mensch ihn
+ * manuell freischaltet). BotID hat hier stattdessen echte, menschliche
+ * Registrierungen als Bot eingestuft und blockiert -- schlechterer Tausch
+ * als das kleine Restrisiko von Spam-Registrierungen, die ohnehin nie
+ * freigeschaltet werden. Honeypot + Origin-Check bleiben.
+ */
 export async function registrierenAction(_prev: RegistrierenState, formData: FormData): Promise<RegistrierenState> {
   if (honeypotAusgeloest(formData.get('website_url'))) {
     console.warn('registrierenAction: Honeypot-Feld war ausgefuellt.');
@@ -13,11 +22,6 @@ export async function registrierenAction(_prev: RegistrierenState, formData: For
   }
   if (!(await origenErlaubt())) {
     // origenErlaubt() loggt den genauen Origin bereits selbst.
-    return { fehler: 'Registrierung fehlgeschlagen.' };
-  }
-  const botCheck = await checkBotId({ advancedOptions: { checkLevel: 'basic' } });
-  if (botCheck.isBot) {
-    console.warn('registrierenAction: BotID hat den Request als Bot eingestuft.');
     return { fehler: 'Registrierung fehlgeschlagen.' };
   }
 

@@ -1,10 +1,15 @@
 'use server';
 
-import { checkBotId } from 'botid/server';
 import { redirect } from 'next/navigation';
 import { honeypotAusgeloest, origenErlaubt, sichereRedirectUrl } from '@/lib/security/guards';
 import { createClient } from '@/lib/supabase/server';
 
+/**
+ * Bewusst OHNE Vercel BotID (siehe registrieren/actions.ts) -- hat hier
+ * echte Anmeldungen faelschlich blockiert. Supabase Auth begrenzt
+ * Login-Versuche bereits serverseitig pro IP, Honeypot + Origin-Check
+ * bleiben zusaetzlich bestehen.
+ */
 export async function loginAction(_prev: { fehler: string } | null, formData: FormData): Promise<{ fehler: string } | null> {
   if (honeypotAusgeloest(formData.get('website_url'))) {
     console.warn('loginAction: Honeypot-Feld war ausgefuellt.');
@@ -12,11 +17,6 @@ export async function loginAction(_prev: { fehler: string } | null, formData: Fo
   }
   if (!(await origenErlaubt())) {
     // origenErlaubt() loggt den genauen Origin bereits selbst.
-    return { fehler: 'Anmeldung fehlgeschlagen.' };
-  }
-  const botCheck = await checkBotId({ advancedOptions: { checkLevel: 'basic' } });
-  if (botCheck.isBot) {
-    console.warn('loginAction: BotID hat den Request als Bot eingestuft.');
     return { fehler: 'Anmeldung fehlgeschlagen.' };
   }
 
