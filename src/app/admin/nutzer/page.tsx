@@ -14,7 +14,7 @@ type ProfilZeile = {
 };
 
 export default async function NutzerVerwaltungPage() {
-  const { supabase } = await erfordereAdmin();
+  const { supabase, userId } = await erfordereAdmin();
 
   const { data, error } = await supabase.rpc('admin_list_profiles');
   const zeilen = (data ?? []) as ProfilZeile[];
@@ -31,7 +31,7 @@ export default async function NutzerVerwaltungPage() {
 
       {error && <p className="mb-4 rounded-xl bg-red/10 px-3.5 py-2.5 text-[13.5px] text-red">Konnte Nutzer nicht laden: {error.message}</p>}
 
-      <NutzerTabelle zeilen={zeilen} />
+      <NutzerTabelle zeilen={zeilen} eigeneId={userId} />
     </div>
   );
 }

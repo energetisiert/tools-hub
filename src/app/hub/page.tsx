@@ -66,6 +66,12 @@ export default async function HubPage() {
 
   const vorname = (profil?.full_name ?? '').trim().split(/\s+/)[0] || null;
 
+  let wartendeAnzahl = 0;
+  if (profil?.role === 'admin') {
+    const { data } = await supabase.rpc('admin_pending_count');
+    wartendeAnzahl = typeof data === 'number' ? data : 0;
+  }
+
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-8 sm:px-7 sm:py-10">
       <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
@@ -85,9 +91,17 @@ export default async function HubPage() {
           {profil?.role === 'admin' && (
             <Link
               href="/admin/nutzer"
-              className="rounded-full border border-black/[0.12] px-4 py-2 text-[12.5px] font-semibold text-strong transition-colors hover:border-ac hover:text-ac"
+              className="relative rounded-full border border-black/[0.12] px-4 py-2 text-[12.5px] font-semibold text-strong transition-colors hover:border-ac hover:text-ac"
             >
               Verwaltung
+              {wartendeAnzahl > 0 && (
+                <span
+                  className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-warm px-1 text-[10px] font-bold text-white"
+                  title={`${wartendeAnzahl} Konto${wartendeAnzahl === 1 ? '' : 'en'} wartet auf Freischaltung`}
+                >
+                  {wartendeAnzahl}
+                </span>
+              )}
             </Link>
           )}
           <form action={logoutAction}>

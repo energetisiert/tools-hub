@@ -27,3 +27,13 @@ export async function freischaltenAction(profileId: string): Promise<void> {
   }
   revalidatePath('/admin/nutzer');
 }
+
+export async function loeschenAction(profileId: string): Promise<void> {
+  const { supabase } = await erfordereAdmin();
+  const { error } = await supabase.rpc('admin_delete_profile', { p_profile_id: profileId });
+  if (error) {
+    console.error('loeschenAction fehlgeschlagen:', error.message);
+    throw new Error('Konto konnte nicht geloescht werden.');
+  }
+  revalidatePath('/admin/nutzer');
+}

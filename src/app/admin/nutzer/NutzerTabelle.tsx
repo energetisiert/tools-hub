@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
-import { freischaltenAction } from './actions';
+import { freischaltenAction, loeschenAction } from './actions';
 import { PaketSegment } from './PaketSegment';
 
 type ProfilZeile = {
@@ -39,7 +39,7 @@ const SPALTEN: { key: SpaltenKey; label: string }[] = [
  * Nutzerzahl dieses internen Tools lohnt sich kein Server-Roundtrip pro
  * Tastenanschlag/Klick.
  */
-export function NutzerTabelle({ zeilen }: { zeilen: ProfilZeile[] }) {
+export function NutzerTabelle({ zeilen, eigeneId }: { zeilen: ProfilZeile[]; eigeneId: string }) {
   const [suche, setSuche] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('alle');
   const [sortSpalte, setSortSpalte] = useState<SpaltenKey>('full_name');
@@ -142,7 +142,12 @@ export function NutzerTabelle({ zeilen }: { zeilen: ProfilZeile[] }) {
                   </span>
                 </td>
                 <td className="px-4 py-3">{z.status !== 'pending' && <PaketSegment profileId={z.id} aktuell={z.package_slug} />}</td>
-                <td className="px-4 py-3">{z.status === 'pending' && <FreischaltenButton profileId={z.id} />}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    {z.status === 'pending' && <FreischaltenButton profileId={z.id} />}
+                    {z.id !== eigeneId && <LoeschenButton profileId={z.id} name={z.full_name || z.email} />}
+                  </div>
+                </td>
               </tr>
             ))}
             {sichtbar.length === 0 && (
@@ -169,6 +174,23 @@ function FreischaltenButton({ profileId }: { profileId: string }) {
       className="rounded-full bg-doc px-3.5 py-1.5 text-[11.5px] font-semibold text-white transition-colors hover:bg-dark disabled:opacity-50"
     >
       {pending ? '…' : 'Freischalten'}
+    </button>
+  );
+}
+
+function LoeschenButton({ profileId, name }: { profileId: string; name: string }) {
+  const [pending, startTransition] = useTransition();
+  return (
+    <button
+      type="button"
+      disabled={pending}
+      onClick={() => {
+        if (!window.confirm(`Konto "${name}" wirklich unwiderruflich loeschen?`)) return;
+        startTransition(() => loeschenAction(profileId));
+      }}
+      className="rounded-full border border-red/30 px-3.5 py-1.5 text-[11.5px] font-semibold text-red transition-colors hover:bg-red/10 disabled:opacity-50"
+    >
+      {pending ? '…' : 'Löschen'}
     </button>
   );
 }
