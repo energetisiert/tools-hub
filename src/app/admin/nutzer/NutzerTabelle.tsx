@@ -166,31 +166,61 @@ export function NutzerTabelle({ zeilen, eigeneId }: { zeilen: ProfilZeile[]; eig
 
 function FreischaltenButton({ profileId }: { profileId: string }) {
   const [pending, startTransition] = useTransition();
+  const [fehler, setFehler] = useState<string | null>(null);
+
+  function klick() {
+    setFehler(null);
+    startTransition(async () => {
+      try {
+        await freischaltenAction(profileId);
+      } catch (e) {
+        setFehler(e instanceof Error ? e.message : 'Freischalten fehlgeschlagen.');
+      }
+    });
+  }
+
   return (
-    <button
-      type="button"
-      disabled={pending}
-      onClick={() => startTransition(() => freischaltenAction(profileId))}
-      className="rounded-full bg-doc px-3.5 py-1.5 text-[11.5px] font-semibold text-white transition-colors hover:bg-dark disabled:opacity-50"
-    >
-      {pending ? '…' : 'Freischalten'}
-    </button>
+    <div>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={klick}
+        className="rounded-full bg-doc px-3.5 py-1.5 text-[11.5px] font-semibold text-white transition-colors hover:bg-dark disabled:opacity-50"
+      >
+        {pending ? '…' : 'Freischalten'}
+      </button>
+      {fehler && <p className="mt-1 text-[11px] text-red">{fehler}</p>}
+    </div>
   );
 }
 
 function LoeschenButton({ profileId, name }: { profileId: string; name: string }) {
   const [pending, startTransition] = useTransition();
+  const [fehler, setFehler] = useState<string | null>(null);
+
+  function klick() {
+    if (!window.confirm(`Konto "${name}" wirklich unwiderruflich loeschen?`)) return;
+    setFehler(null);
+    startTransition(async () => {
+      try {
+        await loeschenAction(profileId);
+      } catch (e) {
+        setFehler(e instanceof Error ? e.message : 'Löschen fehlgeschlagen.');
+      }
+    });
+  }
+
   return (
-    <button
-      type="button"
-      disabled={pending}
-      onClick={() => {
-        if (!window.confirm(`Konto "${name}" wirklich unwiderruflich loeschen?`)) return;
-        startTransition(() => loeschenAction(profileId));
-      }}
-      className="rounded-full border border-red/30 px-3.5 py-1.5 text-[11.5px] font-semibold text-red transition-colors hover:bg-red/10 disabled:opacity-50"
-    >
-      {pending ? '…' : 'Löschen'}
-    </button>
+    <div>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={klick}
+        className="rounded-full border border-red/30 px-3.5 py-1.5 text-[11.5px] font-semibold text-red transition-colors hover:bg-red/10 disabled:opacity-50"
+      >
+        {pending ? '…' : 'Löschen'}
+      </button>
+      {fehler && <p className="mt-1 text-[11px] text-red">{fehler}</p>}
+    </div>
   );
 }

@@ -1,8 +1,9 @@
 /**
  * Werkzeug-Katalog des Hubs. Die Slugs der Live-Tools muessen mit
  * package_tools.tool_slug im Supabase-Projekt uebereinstimmen -- ueber sie
- * entscheidet spaeter das gebuchte Paket, welche Kacheln freigeschaltet sind.
- * Solange profiles.package_id null ist, gilt Vollzugriff auf alle Live-Tools.
+ * entscheidet das gebuchte Paket, welche Kacheln freigeschaltet sind.
+ * Fail-closed: ohne zugewiesenes Paket (profiles.package_id null) ist KEINE
+ * Kachel freigeschaltet, siehe hub/page.tsx.
  *
  * Beschreibungen und Monogramme folgen dem Zielgruppen-Konzept
  * (tool-hub-konzept.html im Projektordner).

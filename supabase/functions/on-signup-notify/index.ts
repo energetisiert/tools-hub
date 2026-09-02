@@ -28,6 +28,17 @@ function toHex(buf: ArrayBuffer): string {
     .join('');
 }
 
+// full_name kommt direkt aus der Registrierung (Nutzereingabe) -- ungesichert
+// waere hier HTML/Markup-Injection in die Admin-Benachrichtigungsmail moeglich.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function issueApprovalToken(profileId: string, secret: string): Promise<string> {
   const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const payload = `${profileId}.${Date.now()}`;
@@ -63,6 +74,8 @@ Deno.serve(async (req: Request) => {
 
   const token = await issueApprovalToken(profileId, requestTokenSecret);
   const bestaetigenUrl = `https://tools.energetisiert.de/admin/bestaetigen?token=${encodeURIComponent(token)}`;
+  const emailSicher = escapeHtml(email);
+  const nameSicher = fullName ? escapeHtml(fullName) : '—';
 
   const resendResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -70,9 +83,9 @@ Deno.serve(async (req: Request) => {
     body: JSON.stringify({
       from: fromEmail,
       to: adminEmail,
-      subject: `Neue Registrierung: ${email}`,
+      subject: `Neue Registrierung: ${emailSicher}`,
       html: `<p>Neue Registrierung fuer die energetisiert. Tools:</p>
-             <p>Name: ${fullName ?? '—'}<br>E-Mail: ${email}</p>
+             <p>Name: ${nameSicher}<br>E-Mail: ${emailSicher}</p>
              <p><a href="${bestaetigenUrl}">Registrierung pruefen und freischalten</a></p>
              <p style="color:#8a8a84;font-size:12px">Link gueltig 24 Stunden.</p>`,
     }),

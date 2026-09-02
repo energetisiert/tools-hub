@@ -15,8 +15,9 @@ const PAKET_STUFEN = ['basic', 'pro', 'elite'];
  *   1. Keine Session -> /login
  *   2. Status nicht 'approved' -> /warten-auf-freischaltung
  *   3. Paket (profiles.package_id -> package_tools) entscheidet, welche
- *      Kacheln oeffnen; package_id null = bewusste Admin-Ausnahme mit
- *      Vollzugriff (Freischaltung weist normalen Konten automatisch Basic zu).
+ *      Kacheln oeffnen; kein Paket = keine Kacheln offen (fail-closed, deckt
+ *      sich mit hat_zugriff()/zugriffsstatus() in der DB -- Freischaltung
+ *      weist normalen Konten automatisch Basic zu, Admins bekommen Elite).
  * Wichtig: hier zaehlt die LIVE-Datenbank (RLS-geschuetzte Abfragen), nicht
  * der bis zu ~1h alte JWT-Claim -- der Claim ist nur fuer schnelle
  * Middleware-Redirects in den Tools gedacht.
@@ -48,10 +49,10 @@ export default async function HubPage() {
 
   const eigenesPaket = profil?.package_id ? (pakete ?? []).find((p) => p.id === profil.package_id) ?? null : null;
 
-  // null = Vollzugriff (kein Paket zugewiesen -- Admin-Ausnahme).
-  const freigeschalteteSlugs: Set<string> | null = eigenesPaket
+  // Fail-closed: kein Paket zugewiesen -> leere Menge, keine Kachel offen.
+  const freigeschalteteSlugs: Set<string> = eigenesPaket
     ? new Set((paketTools ?? []).filter((pt) => pt.package_id === eigenesPaket.id).map((pt) => pt.tool_slug))
-    : null;
+    : new Set();
 
   // Fuer gesperrte Kacheln: die guenstigste Paketstufe, die das Tool enthaelt.
   const abStufe = (slug: string): string | null => {
@@ -84,9 +85,9 @@ export default async function HubPage() {
             Einmal angemeldet, überall erkannt — die Anmeldung gilt automatisch auf allen Tool-Subdomains.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
           <span className="rounded-full bg-dark px-3.5 py-1.5 text-[11.5px] font-bold text-mint">
-            Paket: {eigenesPaket?.name ?? 'Vollzugriff'}
+            Paket: {eigenesPaket?.name ?? 'Keins'}
           </span>
           {profil?.role === 'admin' && (
             <Link
@@ -104,6 +105,14 @@ export default async function HubPage() {
               )}
             </Link>
           )}
+          {profil?.role === 'admin' && (
+            <Link
+              href="/admin/verlauf"
+              className="rounded-full border border-black/[0.12] px-4 py-2 text-[12.5px] font-semibold text-strong transition-colors hover:border-ac hover:text-ac"
+            >
+              Verlauf
+            </Link>
+          )}
           <form action={logoutAction}>
             <button
               type="submit"
@@ -116,15 +125,15 @@ export default async function HubPage() {
       </div>
 
       <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Verfügbare Werkzeuge</h2>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-3">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(230px,100%),1fr))] gap-3">
         {LIVE_TOOLS.map((tool) => {
-          const gesperrt = freigeschalteteSlugs !== null && !freigeschalteteSlugs.has(tool.slug);
+          const gesperrt = !freigeschalteteSlugs.has(tool.slug);
           return <ToolKachel key={tool.slug} tool={tool} gesperrtAb={gesperrt ? abStufe(tool.slug) : null} />;
         })}
       </div>
 
       <h2 className="mb-3 mt-9 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">In Entwicklung</h2>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-3">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(230px,100%),1fr))] gap-3">
         {GEPLANTE_TOOLS.map((tool) => (
           <ToolKachel key={tool.slug} tool={tool} geplant />
         ))}

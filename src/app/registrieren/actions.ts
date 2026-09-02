@@ -21,7 +21,8 @@ export type RegistrierenState = { fehler: string } | { erfolg: true } | null;
  *   werden.
  *
  * Der Admin-API-Weg unterliegt NICHT dem Signup-Rate-Limit von Supabase Auth,
- * deshalb eigenes Rate-Limit (tools_hub_rate_limit_hit, 5/Stunde pro IP).
+ * deshalb eigenes Rate-Limit ueber die geteilte rate_limit_hit()-Funktion,
+ * scope 'tools_hub:registrieren', 5/Stunde pro IP.
  *
  * Bewusst OHNE Vercel BotID, anders als die Rechner-Tools: dort schuetzt
  * BotID proprietaere Formeln vor automatisiertem Scraping in grossem Stil --
@@ -46,12 +47,17 @@ export async function registrierenAction(_prev: RegistrierenState, formData: For
   if (!/^\S+@\S+\.\S+$/.test(email) || passwort.length < 8) {
     return { fehler: 'Bitte eine gültige E-Mail-Adresse und ein Passwort mit mindestens 8 Zeichen angeben.' };
   }
+  if (vollerName.length > 200 || email.length > 254) {
+    return { fehler: 'Eingabe zu lang.' };
+  }
 
   const supabase = createServiceRoleClient();
 
-  const { data: erlaubt, error: rlFehler } = await supabase.rpc('tools_hub_rate_limit_hit', {
-    p_key: `registrieren:${await ipHash()}`,
+  const { data: erlaubt, error: rlFehler } = await supabase.rpc('rate_limit_hit', {
+    p_scope: 'tools_hub:registrieren',
+    p_ip_hash: await ipHash(),
     p_limit: 5,
+    p_window_seconds: 3600,
   });
   if (rlFehler) {
     console.error('registrierenAction: Rate-Limit-RPC fehlgeschlagen:', rlFehler.message);
