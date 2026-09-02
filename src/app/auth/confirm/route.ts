@@ -1,0 +1,55 @@
+import type { EmailOtpType } from '@supabase/supabase-js';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import type { NextRequest } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+
+/**
+ * Ziel des Links aus der Supabase-Passwort-zuruecksetzen-Mail. Tauscht den
+ * einmaligen, kurzlebigen token_hash gegen eine echte Session (verifyOtp),
+ * dann Weiterleitung zur Seite, auf der das neue Passwort gesetzt wird.
+ *
+ * Bewusst ein oeffentlicher Route Handler ohne origenErlaubt()-Pruefung: die
+ * Anfrage kommt vom Mail-Client des Nutzers per Klick, nicht als Formular-
+ * Absendung von dieser Seite selbst -- ein Origin/Referer der eigenen Domain
+ * ist hier nicht zu erwarten. Die Berechtigung liegt allein im token_hash
+ * (von Supabase signiert, einmalig, zeitlich begrenzt, praktisch nicht zu
+ * erraten). Ein grosszuegiges IP-Rate-Limit bleibt trotzdem als zweite
+ * Schicht bestehen, konsistent mit jedem anderen oeffentlichen Endpunkt
+ * dieser Suite.
+ */
+export async function GET(request: NextRequest) {
+  const { searchParams, origin } = new URL(request.url);
+  const token_hash = searchParams.get('token_hash');
+  const type = searchParams.get('type') as EmailOtpType | null;
+
+  const supabase = await createClient();
+
+  const { data: erlaubt, error: rlFehler } = await supabase.rpc('rate_limit_hit', {
+    p_scope: 'tools_hub:passwort_reset_confirm',
+    p_ip_hash: await ipHash(),
+    p_limit: 20,
+    p_window_seconds: 3600,
+  });
+  if (rlFehler) console.error('auth/confirm: Rate-Limit-RPC fehlgeschlagen:', rlFehler.message);
+
+  if (erlaubt !== false && token_hash && type === 'recovery') {
+    const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+    if (!error) {
+      redirect(`${origin}/passwort-zuruecksetzen`);
+    }
+    console.error('auth/confirm: verifyOtp fehlgeschlagen:', error.code, error.message);
+  }
+
+  redirect(`${origin}/passwort-vergessen?ungueltig=1`);
+}
+
+/** SHA-256 der Client-IP, identisches Muster wie in registrieren/actions.ts. */
+async function ipHash(): Promise<string> {
+  const h = await headers();
+  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || h.get('x-real-ip') || 'unbekannt';
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}

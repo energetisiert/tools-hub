@@ -21,6 +21,11 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
       <Field label="Passwort">
         <TextInput type="password" name="passwort" required autoComplete="current-password" placeholder="dein Passwort" />
       </Field>
+      <p className="text-right text-[13px] text-muted2">
+        <Link href="/passwort-vergessen" className="font-semibold text-ac hover:underline">
+          Passwort vergessen?
+        </Link>
+      </p>
       <SubmitButton pending={pending}>Anmelden</SubmitButton>
       <p className="text-center text-[13px] text-muted2">
         Noch kein Konto?{' '}
