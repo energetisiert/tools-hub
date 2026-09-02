@@ -23,22 +23,28 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
 
-  const supabase = await createClient();
+  if (token_hash && type === 'recovery') {
+    const supabase = await createClient();
 
-  const { data: erlaubt, error: rlFehler } = await supabase.rpc('rate_limit_hit', {
-    p_scope: 'tools_hub:passwort_reset_confirm',
-    p_ip_hash: await ipHash(),
-    p_limit: 20,
-    p_window_seconds: 3600,
-  });
-  if (rlFehler) console.error('auth/confirm: Rate-Limit-RPC fehlgeschlagen:', rlFehler.message);
+    // Erst hier pruefen (nicht schon oben, unbedingt) -- sonst wuerde jeder
+    // Aufruf ohne token_hash/type (Scanner, Crawler, ein leerer /auth/confirm-
+    // Aufruf) unnoetig ein Kontingent verbrauchen, das auf einer geteilten IP
+    // (Firmen-NAT, Mobilfunk) dann fuer den echten Klick fehlen koennte.
+    const { data: erlaubt, error: rlFehler } = await supabase.rpc('rate_limit_hit', {
+      p_scope: 'tools_hub:passwort_reset_confirm',
+      p_ip_hash: await ipHash(),
+      p_limit: 20,
+      p_window_seconds: 3600,
+    });
+    if (rlFehler) console.error('auth/confirm: Rate-Limit-RPC fehlgeschlagen:', rlFehler.message);
 
-  if (erlaubt !== false && token_hash && type === 'recovery') {
-    const { error } = await supabase.auth.verifyOtp({ type, token_hash });
-    if (!error) {
-      redirect(`${origin}/passwort-zuruecksetzen`);
+    if (erlaubt !== false) {
+      const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+      if (!error) {
+        redirect(`${origin}/passwort-zuruecksetzen`);
+      }
+      console.error('auth/confirm: verifyOtp fehlgeschlagen:', error.code, error.message);
     }
-    console.error('auth/confirm: verifyOtp fehlgeschlagen:', error.code, error.message);
   }
 
   redirect(`${origin}/passwort-vergessen?ungueltig=1`);

@@ -103,8 +103,25 @@ async function ipHash(): Promise<string> {
 
 /** SHA-256 der normalisierten Ziel-Adresse, fuer das zweite (Ziel-)Rate-Limit. */
 async function emailHash(email: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.trim().toLowerCase()));
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalisiereEmail(email)));
   return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
+}
+
+/**
+ * Entfernt "+tag"-Subadressierung (Gmail, Outlook, Yahoo, Proton u.a. liefern
+ * "name+irgendwas@domain" an dieselbe Inbox wie "name@domain") -- sonst liesse
+ * sich das Ziel-Rate-Limit durch Tag-Rotation umgehen und die Mailbox trotzdem
+ * fluten. Bewusst KEIN Entfernen von Punkten im Local-Part (das ist
+ * Gmail-spezifisches Verhalten -- bei anderen Anbietern sind Punkte ein
+ * echtes Unterscheidungsmerkmal, das wuerde dort verschiedene Adressen
+ * faelschlich zusammenfassen).
+ */
+function normalisiereEmail(email: string): string {
+  const wert = email.trim().toLowerCase();
+  const at = wert.indexOf('@');
+  if (at === -1) return wert;
+  const localPart = wert.slice(0, at).split('+')[0];
+  return `${localPart}${wert.slice(at)}`;
 }
