@@ -2,7 +2,7 @@
 
 Zentrale Login-/Registrierungs-App für alle energetisiert.-Rechner-Tools. Einmal hier anmelden, per Cookie auf `.energetisiert.de` über alle Tool-Subdomains hinweg erkannt (Single Sign-On) — kein Login pro Tool nötig.
 
-Next.js (App Router, Server Actions) · Supabase Auth (geteiltes Projekt "foerderrechner") · Tailwind CSS.
+Next.js (App Router, Server Actions) · Supabase Auth (geteiltes Projekt "Tool Hub energetisiert.") · Tailwind CSS.
 
 ## Ablauf
 
