@@ -58,12 +58,6 @@ export const LIVE_TOOLS: HubTool[] = [
 
 export const GEPLANTE_TOOLS: HubTool[] = [
   {
-    slug: 'eigentuemerwechsel',
-    name: 'Eigentümerwechsel-Check',
-    mono: 'EW',
-    desc: 'Pflichten und Fristen beim Eigentümerwechsel, inklusive Nachrüstpflichten.',
-  },
-  {
     slug: 'energieausweis',
     name: 'Energieausweis-Check',
     mono: 'EA',
