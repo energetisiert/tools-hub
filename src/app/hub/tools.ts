@@ -54,6 +54,13 @@ export const LIVE_TOOLS: HubTool[] = [
     desc: 'Kosten, Förderung und Wirtschaftlichkeit der energetischen Sanierung, gewerkeweise.',
     url: 'https://sanierungsrechner.energetisiert.de',
   },
+  {
+    slug: 'foerderstrategie',
+    name: 'Förderstrategie',
+    mono: 'FS',
+    desc: 'Welcher Förderweg bringt am meisten: BEG, KfW und Steuerbonus im Vergleich, Wohn- und Nichtwohngebäude.',
+    url: 'https://foerderstrategie.energetisiert.de',
+  },
 ];
 
 export const GEPLANTE_TOOLS: HubTool[] = [
@@ -62,12 +69,6 @@ export const GEPLANTE_TOOLS: HubTool[] = [
     name: 'Energieausweis-Check',
     mono: 'EA',
     desc: 'Gültigkeit, Aussagekraft und Pflichten rund um den Energieausweis.',
-  },
-  {
-    slug: 'foerderstrategie',
-    name: 'Förderstrategie',
-    mono: 'FS',
-    desc: 'Welcher Förderweg, in welcher Reihenfolge, mit welchen Fristen.',
   },
   {
     slug: 'baukosten',
