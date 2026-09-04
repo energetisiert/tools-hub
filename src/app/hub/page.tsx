@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { logoutAction } from './actions';
 import { GEPLANTE_TOOLS, LIVE_TOOLS, type HubTool } from './tools';
+import { GespeicherteGebaeudeListe } from './GespeicherteGebaeudeListe';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +82,12 @@ export default async function HubPage() {
     wartendeAnzahl = typeof data === 'number' ? data : 0;
   }
 
+  // Toolübergreifend (kein p_tool_slug) -- jeder Nutzer sieht hier seine
+  // eigenen gespeicherten Gebäude aus allen Tools, unabhängig vom Paket.
+  const { data: gespeicherteGebaeude } = await supabase.rpc('saved_results_list');
+  const toolNamen = Object.fromEntries(LIVE_TOOLS.map((t) => [t.slug, t.name]));
+  const toolUrls = Object.fromEntries(LIVE_TOOLS.filter((t) => t.url).map((t) => [t.slug, t.url!]));
+
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-8 sm:px-7 sm:py-10">
       <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
@@ -131,6 +138,8 @@ export default async function HubPage() {
           </form>
         </div>
       </div>
+
+      <GespeicherteGebaeudeListe eintraege={gespeicherteGebaeude ?? []} toolNamen={toolNamen} toolUrls={toolUrls} />
 
       <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Verfügbare Werkzeuge</h2>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(230px,100%),1fr))] gap-3">
