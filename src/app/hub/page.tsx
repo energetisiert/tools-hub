@@ -65,6 +65,14 @@ export default async function HubPage() {
     return null;
   };
 
+  // Tools, die ausschliesslich ueber ein Nicht-Stufen-Paket (z. B. "Partner")
+  // erreichbar sind, haben keine PAKET_STUFEN-Stufe -- "Ab Paket X" ergibt fuer
+  // sie keinen Sinn, da Partner keine Aufstiegsstufe von Basic/Pro/Elite ist.
+  const sperrLabel = (slug: string): string => {
+    const stufenName = abStufe(slug);
+    return stufenName ? `Ab Paket ${stufenName}` : 'Nur für Vertriebspartner';
+  };
+
   const vorname = (profil?.full_name ?? '').trim().split(/\s+/)[0] || null;
 
   let wartendeAnzahl = 0;
@@ -128,7 +136,7 @@ export default async function HubPage() {
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(230px,100%),1fr))] gap-3">
         {LIVE_TOOLS.map((tool) => {
           const gesperrt = !freigeschalteteSlugs.has(tool.slug);
-          return <ToolKachel key={tool.slug} tool={tool} gesperrtAb={gesperrt ? abStufe(tool.slug) : null} />;
+          return <ToolKachel key={tool.slug} tool={tool} gesperrt={gesperrt} sperrLabel={gesperrt ? sperrLabel(tool.slug) : null} />;
         })}
       </div>
 
@@ -144,15 +152,16 @@ export default async function HubPage() {
 
 function ToolKachel({
   tool,
-  gesperrtAb = null,
+  gesperrt = false,
+  sperrLabel = null,
   geplant = false,
 }: {
   tool: HubTool;
-  /** Name der guenstigsten Paketstufe, die das Tool enthaelt -- nur bei gesperrten Kacheln gesetzt. */
-  gesperrtAb?: string | null;
+  gesperrt?: boolean;
+  /** Anzeigetext der Sperr-Badge (z. B. "Ab Paket Elite" oder "Nur für Vertriebspartner") -- nur bei gesperrten Kacheln gesetzt. */
+  sperrLabel?: string | null;
   geplant?: boolean;
 }) {
-  const gesperrt = gesperrtAb !== null;
   return (
     <div className={`flex flex-col gap-2 rounded-[14px] border border-black/[0.08] bg-white p-3.5 ${gesperrt ? 'opacity-75' : ''}`}>
       <div className="flex items-center gap-2.5">
@@ -167,7 +176,7 @@ function ToolKachel({
             <span className="rounded-full bg-tint px-2 py-0.5 text-[9.5px] font-bold text-muted2">In Entwicklung</span>
           )}
           {gesperrt && (
-            <span className="rounded-full bg-tint px-2 py-0.5 text-[9.5px] font-bold text-muted2">Ab Paket {gesperrtAb}</span>
+            <span className="rounded-full bg-tint px-2 py-0.5 text-[9.5px] font-bold text-muted2">{sperrLabel}</span>
           )}
           {tool.ueberschlag && (
             <span className="rounded-full border border-[#f0e2bf] bg-[#fdf6e7] px-2 py-0.5 text-[9.5px] font-bold text-[#6b5518]">

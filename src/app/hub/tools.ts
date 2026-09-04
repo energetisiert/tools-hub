@@ -61,6 +61,14 @@ export const LIVE_TOOLS: HubTool[] = [
     desc: 'Welcher Förderweg bringt am meisten: BEG, KfW und Steuerbonus im Vergleich, Wohn- und Nichtwohngebäude.',
     url: 'https://foerderstrategie.energetisiert.de',
   },
+  {
+    slug: 'heizlastrechner-gep',
+    name: 'Heizlastrechner GEP',
+    mono: 'HG',
+    desc: 'Heizlast plus Wärmepumpen-Grobauslegung (GEP-Baureihe) für Vertriebspartner.',
+    url: 'https://heizlastrechner-gep.energetisiert.de',
+    ueberschlag: true,
+  },
 ];
 
 export const GEPLANTE_TOOLS: HubTool[] = [

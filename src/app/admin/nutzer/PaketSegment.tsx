@@ -7,6 +7,7 @@ const STUFEN = [
   { slug: 'basic', label: 'Basic' },
   { slug: 'pro', label: 'Pro' },
   { slug: 'elite', label: 'Elite' },
+  { slug: 'partner', label: 'Partner' },
 ];
 
 export function PaketSegment({ profileId, aktuell }: { profileId: string; aktuell: string | null }) {
