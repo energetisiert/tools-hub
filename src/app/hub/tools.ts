@@ -66,7 +66,7 @@ export const LIVE_TOOLS: HubTool[] = [
     name: 'Heizlastrechner GEP',
     mono: 'HG',
     desc: 'Heizlast plus Wärmepumpen-Grobauslegung (GEP-Baureihe) für Vertriebspartner.',
-    url: 'https://heizlastrechner-gep.energetisiert.de',
+    url: 'https://gep.energetisiert.de',
     ueberschlag: true,
   },
 ];
