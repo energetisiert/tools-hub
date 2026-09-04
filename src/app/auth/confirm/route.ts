@@ -1,7 +1,7 @@
 import type { EmailOtpType } from '@supabase/supabase-js';
-import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { NextRequest } from 'next/server';
+import { ipHash } from '@/lib/security/guards';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -48,14 +48,4 @@ export async function GET(request: NextRequest) {
   }
 
   redirect(`${origin}/passwort-vergessen?ungueltig=1`);
-}
-
-/** SHA-256 der Client-IP, identisches Muster wie in registrieren/actions.ts. */
-async function ipHash(): Promise<string> {
-  const h = await headers();
-  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || h.get('x-real-ip') || 'unbekannt';
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
 }

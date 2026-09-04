@@ -1,7 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { honeypotAusgeloest, origenErlaubt } from '@/lib/security/guards';
+import { honeypotAusgeloest, ipHash, origenErlaubt, saltedHash } from '@/lib/security/guards';
 import { createClient } from '@/lib/supabase/server';
 
 export type PasswortVergessenState = { fehler: string } | { erfolg: true } | null;
@@ -91,22 +91,17 @@ export async function passwortVergessenAction(_prev: PasswortVergessenState, for
   return { erfolg: true };
 }
 
-/** SHA-256 der Client-IP, identisch zum Muster in registrieren/actions.ts. */
-async function ipHash(): Promise<string> {
-  const h = await headers();
-  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || h.get('x-real-ip') || 'unbekannt';
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
+/* ipHash() liegt in lib/security/guards.ts -- gesalzen, damit der Schluessel
+   nicht auf die Klartext-IP zurueckrechenbar ist. */
 
-/** SHA-256 der normalisierten Ziel-Adresse, fuer das zweite (Ziel-)Rate-Limit. */
+/**
+ * Gesalzener Hash der normalisierten Ziel-Adresse, fuer das zweite
+ * (Ziel-)Rate-Limit. Der Salt ist hier besonders wichtig: E-Mail-Adressen sind
+ * erratbar, ein ungesalzener Hash in der rate_limits-Tabelle wuerde also
+ * verraten, WER ein Passwort zurueckgesetzt hat.
+ */
 async function emailHash(email: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalisiereEmail(email)));
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+  return saltedHash(normalisiereEmail(email));
 }
 
 /**

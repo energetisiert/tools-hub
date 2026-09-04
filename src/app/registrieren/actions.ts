@@ -1,7 +1,6 @@
 'use server';
 
-import { headers } from 'next/headers';
-import { honeypotAusgeloest, origenErlaubt } from '@/lib/security/guards';
+import { honeypotAusgeloest, ipHash, origenErlaubt } from '@/lib/security/guards';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export type RegistrierenState = { fehler: string } | { erfolg: true } | null;
@@ -85,15 +84,5 @@ export async function registrierenAction(_prev: RegistrierenState, formData: For
   return { erfolg: true };
 }
 
-/**
- * SHA-256 der Client-IP als Rate-Limit-Schluessel -- die IP selbst landet
- * nie in der Datenbank (Datenminimierung), der Hash reicht zum Zaehlen.
- */
-async function ipHash(): Promise<string> {
-  const h = await headers();
-  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || h.get('x-real-ip') || 'unbekannt';
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
+/* ipHash() liegt in lib/security/guards.ts -- gesalzen, damit der Schluessel
+   nicht auf die Klartext-IP zurueckrechenbar ist. */

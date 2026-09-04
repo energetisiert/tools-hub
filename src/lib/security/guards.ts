@@ -58,6 +58,59 @@ export function honeypotAusgeloest(websiteUrl: unknown): boolean {
 }
 
 /**
+ * Salt fuer die Rate-Limit-Schluessel unten. Ein UNGESALZENER Hash von IP oder
+ * E-Mail ist keine wirksame Pseudonymisierung: IPv4 hat nur 2^32 Werte (eine
+ * vollstaendige Rainbow-Table laesst sich in Minuten erzeugen) und E-Mail-
+ * Adressen sind ohnehin erratbar -- wer die Zeilen der rate_limits-Tabelle
+ * sieht, koennte damit rekonstruieren, WER sich wann registriert oder ein
+ * Passwort zurueckgesetzt hat. Mit Salt ist der Hash nur noch ein Zaehl-
+ * schluessel, genau wie in den fuenf Rechnern (dort IP_SALT).
+ *
+ * Faellt auf REQUEST_TOKEN_SECRET zurueck, das im Hub ohnehin Pflicht ist
+ * (siehe approval-token.ts) -- so wirkt der Fix ohne neue Env-Variable.
+ */
+function hashSalt(): string {
+  const salt = process.env.IP_SALT ?? process.env.REQUEST_TOKEN_SECRET;
+  if (!salt) {
+    throw new Error(
+      'Weder IP_SALT noch REQUEST_TOKEN_SECRET gesetzt -- die Rate-Limit-Schluessel ' +
+        'waeren ungesalzen und damit auf die Klardaten zurueckrechenbar.',
+    );
+  }
+  return salt;
+}
+
+const encoder = new TextEncoder();
+
+async function sha256Hex(wert: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', encoder.encode(wert));
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/**
+ * Gesalzener Hash der Client-IP als Rate-Limit-Schluessel -- die IP selbst
+ * landet nie in der Datenbank.
+ *
+ * `x-forwarded-for` wird auf Vercel von der Plattform gesetzt und NICHT vom
+ * Client durchgereicht (Vercel verwirft eingehende Werte, um Spoofing zu
+ * verhindern), deshalb ist der erste Eintrag hier die echte Client-IP. Auf
+ * einem selbst gehosteten Reverse Proxy waere das anders -- dort haengt jeder
+ * Hop rechts an und nur die rechten Eintraege sind vertrauenswuerdig.
+ */
+export async function ipHash(): Promise<string> {
+  const h = await headers();
+  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || h.get('x-real-ip') || 'unbekannt';
+  return sha256Hex(`${ip}${hashSalt()}`);
+}
+
+/** Gesalzener Hash eines beliebigen Schluessels (z. B. der Ziel-E-Mail-Adresse). */
+export async function saltedHash(wert: string): Promise<string> {
+  return sha256Hex(`${wert}${hashSalt()}`);
+}
+
+/**
  * redirect_to darf ausschliesslich auf *.energetisiert.de zeigen -- sonst
  * waere das ein Open Redirect (Login-Flow leitet nach fremder Anmeldung auf
  * eine beliebige externe URL um).
