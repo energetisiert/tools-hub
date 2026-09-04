@@ -94,10 +94,16 @@ async function sha256Hex(wert: string): Promise<string> {
  * landet nie in der Datenbank.
  *
  * `x-forwarded-for` wird auf Vercel von der Plattform gesetzt und NICHT vom
- * Client durchgereicht (Vercel verwirft eingehende Werte, um Spoofing zu
- * verhindern), deshalb ist der erste Eintrag hier die echte Client-IP. Auf
- * einem selbst gehosteten Reverse Proxy waere das anders -- dort haengt jeder
- * Hop rechts an und nur die rechten Eintraege sind vertrauenswuerdig.
+ * Client durchgereicht -- eingehende Werte verwirft Vercel, um Spoofing zu
+ * verhindern (vercel.com/docs/headers/request-headers). Deshalb ist der erste
+ * Eintrag hier die echte Client-IP und niemand kann sich einen frischen
+ * Rate-Limit-Zaehler erschleichen.
+ *
+ * Wichtig, falls das je hinter einen eigenen Reverse Proxy (nginx, Traefik,
+ * Cloudflare-Tunnel) wandert: dort haengt jeder Hop rechts an, der linke
+ * Eintrag ist dann frei waehlbar und diese Auswertung muesste von RECHTS
+ * zaehlen (Anzahl eigener Proxys als Env-Wert). Nicht vorsorglich eingebaut --
+ * ein zu hoch gesetzter Wert waere schlimmer als keiner.
  */
 export async function ipHash(): Promise<string> {
   const h = await headers();
