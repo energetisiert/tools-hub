@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { gebaeudeLoeschenAction } from './actions';
 
@@ -67,7 +68,7 @@ export function GebaeudeListe({
     <div className="mb-9">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Meine Gebäude</h2>
-        <a href="/studio" className="text-[11.5px] font-semibold text-ac hover:underline">Studio öffnen →</a>
+        <Link href="/studio" className="text-[11.5px] font-semibold text-ac hover:underline">Studio öffnen →</Link>
       </div>
       <div className="rounded-[14px] border border-black/[0.08] bg-white">
         {sichtbar.map((g, i) => (
@@ -83,9 +84,9 @@ export function GebaeudeListe({
                 </div>
               </div>
               <div className="flex flex-none items-center gap-3">
-                <a href={`/studio/${g.id}`} className="rounded-full bg-dark px-3.5 py-1.5 text-[11px] font-bold text-mint transition-opacity hover:opacity-90">
+                <Link href={`/studio/${g.id}`} className="rounded-full bg-dark px-3.5 py-1.5 text-[11px] font-bold text-mint transition-opacity hover:opacity-90">
                   Im Studio öffnen
-                </a>
+                </Link>
                 <button
                   type="button"
                   disabled={pending}
