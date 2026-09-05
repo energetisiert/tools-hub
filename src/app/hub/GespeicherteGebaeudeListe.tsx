@@ -45,7 +45,7 @@ export function GespeicherteGebaeudeListe({
 
   return (
     <div className="mb-9">
-      <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Meine gespeicherten Gebäude</h2>
+      <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Gespeicherte Ergebnisse (bisheriges Format)</h2>
       <div className="rounded-[14px] border border-black/[0.08] bg-white">
         {sichtbar.map((e, i) => (
           <div

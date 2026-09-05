@@ -31,3 +31,14 @@ export async function gespeichertesLoeschenAction(id: string): Promise<void> {
   }
   revalidatePath('/hub');
 }
+
+/** Loescht ein Studio-Gebaeude samt aller Tool-Knoten (RPC prueft auth.uid()). */
+export async function gebaeudeLoeschenAction(id: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('gebaeude_delete', { p_id: id });
+  if (error) {
+    console.error('gebaeudeLoeschenAction fehlgeschlagen:', error.message);
+    throw new Error('Konnte nicht geloescht werden.');
+  }
+  revalidatePath('/hub');
+}
