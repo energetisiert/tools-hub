@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Instrument_Sans, Montserrat } from 'next/font/google';
 import Image from 'next/image';
 import Link from 'next/link';
+import { IdleLogout } from '@/components/IdleLogout';
 import './globals.css';
 
 const montserrat = Montserrat({ variable: '--font-montserrat', subsets: ['latin'], weight: ['700', '800'] });
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </a>
           </div>
         </footer>
+        <IdleLogout />
       </body>
     </html>
   );

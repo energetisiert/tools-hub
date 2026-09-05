@@ -2,6 +2,8 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { cookies, headers } from 'next/headers';
+import { AKTIV_COOKIE, aktivCookieOptions } from '@/lib/security/inaktivitaet';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -14,6 +16,9 @@ import { createClient } from '@/lib/supabase/server';
 export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  // Aktivitaets-Cookie der Inaktivitaets-Abmeldung mit denselben Domain-Optionen loeschen.
+  const host = (await headers()).get('host')?.split(':')[0];
+  (await cookies()).set(AKTIV_COOKIE, '', { ...aktivCookieOptions(host), maxAge: 0 });
   redirect('/login');
 }
 
