@@ -17,21 +17,6 @@ export async function logoutAction() {
   redirect('/login');
 }
 
-/**
- * Loescht ein gespeichertes Gebaeude aus der Uebersicht im Hub -- die RPC
- * prueft selbst per auth.uid(), dass nur eigene Zeilen geloescht werden
- * koennen, unabhaengig davon, welches Tool sie ursspruenglich angelegt hat.
- */
-export async function gespeichertesLoeschenAction(id: string): Promise<void> {
-  const supabase = await createClient();
-  const { error } = await supabase.rpc('saved_results_delete', { p_id: id });
-  if (error) {
-    console.error('gespeichertesLoeschenAction fehlgeschlagen:', error.message);
-    throw new Error('Konnte nicht geloescht werden.');
-  }
-  revalidatePath('/hub');
-}
-
 /** Loescht ein Studio-Gebaeude samt aller Tool-Knoten (RPC prueft auth.uid()). */
 export async function gebaeudeLoeschenAction(id: string): Promise<void> {
   const supabase = await createClient();

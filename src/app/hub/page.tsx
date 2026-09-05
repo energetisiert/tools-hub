@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { logoutAction } from './actions';
 import { GEPLANTE_TOOLS, LIVE_TOOLS, type HubTool } from './tools';
-import { GespeicherteGebaeudeListe } from './GespeicherteGebaeudeListe';
 import { GebaeudeListe } from './GebaeudeListe';
 
 export const dynamic = 'force-dynamic';
@@ -83,12 +82,8 @@ export default async function HubPage() {
     wartendeAnzahl = typeof data === 'number' ? data : 0;
   }
 
-  // Toolübergreifend (kein p_tool_slug) -- jeder Nutzer sieht hier seine
-  // eigenen gespeicherten Gebäude aus allen Tools, unabhängig vom Paket.
-  const { data: gespeicherteGebaeude } = await supabase.rpc('saved_results_list');
-  // Studio-Gebaeude (Phase 1): Heizlastrechner und GEP speichern bereits in
-  // das Gebaeude-Modell; die uebrigen Tools folgen in Phase 2 und schreiben
-  // bis dahin weiter saved_results (Liste darunter).
+  // Studio-Gebaeude: jeder Nutzer sieht hier seine eigenen Gebaeude mit den
+  // Knoten aller Tools, unabhaengig vom Paket (RPC filtert per auth.uid()).
   const { data: gebaeude } = await supabase.rpc('gebaeude_list');
   const toolNamen = Object.fromEntries(LIVE_TOOLS.map((t) => [t.slug, t.name]));
   const toolUrls = Object.fromEntries(LIVE_TOOLS.filter((t) => t.url).map((t) => [t.slug, t.url!]));
@@ -145,7 +140,6 @@ export default async function HubPage() {
       </div>
 
       <GebaeudeListe eintraege={gebaeude ?? []} toolNamen={toolNamen} toolUrls={toolUrls} />
-      <GespeicherteGebaeudeListe eintraege={gespeicherteGebaeude ?? []} toolNamen={toolNamen} toolUrls={toolUrls} />
 
       <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Verfügbare Werkzeuge</h2>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(230px,100%),1fr))] gap-3">
