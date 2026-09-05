@@ -128,6 +128,12 @@ export default async function HubPage() {
               Verlauf
             </Link>
           )}
+          <Link
+            href="/studio"
+            className="rounded-full border border-black/[0.12] px-4 py-2 text-[12.5px] font-semibold text-strong transition-colors hover:border-ac hover:text-ac"
+          >
+            Studio
+          </Link>
           <form action={logoutAction}>
             <button
               type="submit"

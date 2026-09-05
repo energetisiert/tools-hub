@@ -65,7 +65,10 @@ export function GebaeudeListe({
 
   return (
     <div className="mb-9">
-      <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Meine Gebäude</h2>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.08em] text-strong">Meine Gebäude</h2>
+        <a href="/studio" className="text-[11.5px] font-semibold text-ac hover:underline">Studio öffnen →</a>
+      </div>
       <div className="rounded-[14px] border border-black/[0.08] bg-white">
         {sichtbar.map((g, i) => (
           <div key={g.id} className={`px-4 py-3 ${i > 0 ? 'border-t border-black/[0.06]' : ''}`}>
@@ -79,14 +82,19 @@ export function GebaeudeListe({
                   {typeof g.stammdaten?.baujahr_klasse === 'string' && ` · Baujahr ${g.stammdaten.baujahr_klasse}`}
                 </div>
               </div>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => loeschen(g)}
-                className="text-[11.5px] font-semibold text-red disabled:opacity-50"
-              >
-                Löschen
-              </button>
+              <div className="flex flex-none items-center gap-3">
+                <a href={`/studio/${g.id}`} className="rounded-full bg-dark px-3.5 py-1.5 text-[11px] font-bold text-mint transition-opacity hover:opacity-90">
+                  Im Studio öffnen
+                </a>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => loeschen(g)}
+                  className="text-[11.5px] font-semibold text-red disabled:opacity-50"
+                >
+                  Löschen
+                </button>
+              </div>
             </div>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {g.knoten.length === 0 && <span className="text-[11px] text-muted2">Noch keine Berechnung angehängt.</span>}
